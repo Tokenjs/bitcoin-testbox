@@ -1,3 +1,4 @@
+const { PassThrough } = require('stream');
 const Docker = require('dockerode');
 const uuidv4 = require('uuid/v4');
 const { readData, storeData } = require('./dataUtils');
@@ -7,6 +8,25 @@ const docker = new Docker();
 async function untilFinished(stream) {
   return new Promise((resolve, reject) => {
     docker.modem.followProgress(stream, (err, res) => (err ? reject(err) : resolve(res)));
+  });
+}
+
+async function untilMultiplexFinished(stream) {
+  const stdout = new PassThrough();
+  const stderr = new PassThrough();
+  docker.modem.demuxStream(stream, stdout, stderr);
+
+  return new Promise((resolve, reject) => {
+    let result = '';
+    let error = '';
+    stdout.on('data', (data) => {
+      result += data.toString();
+    });
+    stderr.on('data', (data) => {
+      error += data.toString();
+    });
+
+    stream.on('end', () => (error ? reject(error) : resolve(result)));
   });
 }
 
@@ -31,6 +51,7 @@ async function getImageName({ create } = {}) {
 
 module.exports = {
   untilFinished,
+  untilMultiplexFinished,
   getImageName,
   docker,
   killContainer,

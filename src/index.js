@@ -1,4 +1,6 @@
-const { docker, getImageName, killContainer } = require('./utils/dockerUtils');
+const {
+  docker, getImageName, killContainer, untilMultiplexFinished,
+} = require('./utils/dockerUtils');
 const { getRpcAuthCredentials } = require('./utils/bitcoinUtils');
 
 let imageName;
@@ -64,11 +66,35 @@ async function start({ verbose, port = CONTAINER_PORT } = {}) {
   };
 }
 
+async function bitcoinCli(command) {
+  const container = docker.getContainer(imageName);
+  const execution = await container.exec({
+    Cmd: ['bitcoin-cli', '-regtest', ...command],
+    user: 'bitcoin',
+    AttachStdin: false,
+    AttachStdout: true,
+    AttachStderr: true,
+  });
+  return new Promise((resolve, reject) => {
+    execution.start((err, stream) => {
+      if (err) {
+        reject(err);
+        return;
+      }
+
+      untilMultiplexFinished(stream)
+        .then(resolve)
+        .catch(reject);
+    });
+  });
+}
+
 async function stop() {
   await killContainer(imageName);
 }
 
 module.exports = {
   start,
+  bitcoinCli,
   stop,
 };
