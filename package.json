@@ -10,15 +10,15 @@
     "preuninstall": "node ./src/uninstall"
   },
   "dependencies": {
-    "dockerode": "^2.5.7",
-    "uuid": "^3.3.2"
+    "dockerode": "2.5.7",
+    "uuid": "3.3.2"
   },
   "devDependencies": {
-    "bitcoin-core": "^2.0.0",
-    "eslint": "^5.8.0",
-    "eslint-config-airbnb-base": "^13.1.0",
-    "eslint-plugin-import": "^2.14.0",
-    "ip-regex": "^3.0.0",
-    "jest": "^23.6.0"
+    "bitcoin-core": "2.0.0",
+    "eslint": "5.8.0",
+    "eslint-config-airbnb-base": "13.1.0",
+    "eslint-plugin-import": "2.14.0",
+    "ip-regex": "3.0.0",
+    "jest": "23.6.0"
   }
 }
